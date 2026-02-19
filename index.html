@@ -809,6 +809,18 @@ function esc(s) {
 
 // ── Init ─────────────────────────────────────────────────
 loadCredentials();
+
+// Auto-fill server URL if dashboard is hosted by the signal server
+(function autoDetectServer() {
+  const urlInput = document.getElementById("input-url");
+  if (!urlInput.value && window.location.hostname !== "localhost" && window.location.protocol !== "file:") {
+    urlInput.value = window.location.origin;
+  }
+  // Also fill localhost default for dev
+  if (!urlInput.value) {
+    urlInput.value = "http://localhost:8443";
+  }
+})();
 </script>
 </body>
 </html>
