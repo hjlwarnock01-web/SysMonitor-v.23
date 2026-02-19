@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vortex">
+<meta name="theme-color" content="#0a0a0f">
+<title>Vortex AR v2.2 — Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --border: #1e1e2e;
+    --border2: #1a1a2e;
+    --red: #e94560;
+    --green: #00ff88;
+    --blue: #6ec6ff;
+    --yellow: #ffd166;
+    --text: #c0c0c0;
+    --dim: #666;
+    --dimmer: #444;
+    --dimmest: #333;
+    --font: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ── Login Screen ─────────────────────── */
+  #login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px;
+  }
+
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .login-box .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .logo-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+  }
+
+  .logo-text {
+    color: var(--red);
+    font-size: 12px;
+    letter-spacing: 4px;
+    font-weight: 700;
+  }
+
+  .login-box h2 {
+    color: #f0f0f0;
+    font-size: 20px;
+    font-weight: 400;
+    margin: 6px 0 22px;
+  }
+
+  .field-label {
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid #2a2a3a;
+    border-radius: 6px;
+    color: #f0f0f0;
+    font-size: 13px;
+    font-family: var(--font);
+    margin-bottom: 14px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .field-input:focus { border-color: var(--red); }
+
+  .btn-connect {
+    width: 100%;
+    padding: 12px;
+    background: var(--red);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    font-family: var(--font);
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: opacity 0.2s;
+  }
+
+  .btn-connect:disabled { background: var(--dimmest); cursor: not-allowed; }
+  .btn-connect:active { opacity: 0.8; }
+
+  .login-error {
+    background: #1a0a0a;
+    border: 1px solid var(--red);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    color: var(--red);
+  }
+
+  .remember-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .remember-row input { accent-color: var(--red); }
+
+  /* ── Dashboard ────────────────────────── */
+  #dashboard { display: none; padding: 14px; padding-bottom: calc(14px + var(--safe-bottom)); }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  .status-dot.offline {
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .last-updated { color: var(--dimmer); font-size: 10px; }
+
+  .btn-sm {
+    padding: 5px 12px;
+    background: var(--card);
+    border: 1px solid #2a2a3a;
+    border-radius: 4px;
+    color: var(--dim);
+    font-size: 10px;
+    font-family: var(--font);
+    letter-spacing: 1px;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+
+  .btn-sm:active { background: #1a1a2e; }
+
+  .conn-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .conn-label.on { color: var(--green); }
+  .conn-label.off { color: var(--red); }
+
+  /* Error banner */
+  .error-banner {
+    background: #1a0a0a;
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    color: var(--red);
+  }
+
+  /* Status cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  @media (min-width: 768px) {
+    .cards-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .status-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--card-accent, var(--green));
+  }
+
+  .status-card .sc-label {
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .status-card .sc-value {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    word-break: break-all;
+  }
+
+  .status-card .sc-sub {
+    font-size: 9px;
+    color: var(--dimmer);
+  }
+
+  /* Progress bar */
+  .progress-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .progress-header .label {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+  }
+
+  .progress-header .pct {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .progress-track {
+    height: 7px;
+    background: var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--red), var(--green));
+    transition: width 0.5s ease;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 9px;
+    color: var(--dimmer);
+  }
+
+  /* Panels */
+  .panels-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  @media (min-width: 768px) {
+    .panels-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  /* Info rows */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border2);
+    font-size: 11px;
+  }
+
+  .info-row .ir-label { color: var(--dim); }
+  .info-row .ir-value { color: var(--text); text-align: right; max-width: 60%; }
+
+  /* News list */
+  .news-list { max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  .news-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .news-item .ni-name { font-size: 11px; color: #f0f0f0; }
+  .news-item .ni-time { font-size: 9px; color: var(--dim); }
+
+  .currency-badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .currency-badge.USD { color: var(--green); background: rgba(0,255,136,0.08); }
+  .currency-badge.EUR { color: var(--blue); background: rgba(110,198,255,0.08); }
+
+  /* Log lists */
+  .log-list { max-height: 220px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  .log-entry {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border2);
+    font-size: 10px;
+  }
+
+  .log-entry .le-time { color: var(--dim); }
+  .log-entry .le-type { margin-left: 6px; }
+  .log-entry .le-msg { margin-left: 6px; color: var(--text); }
+
+  .trade-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .trade-entry .te-dir { font-size: 10px; font-weight: 700; }
+  .trade-entry .te-dir.BUY { color: var(--green); }
+  .trade-entry .te-dir.SELL { color: var(--red); }
+  .trade-entry .te-time { font-size: 9px; color: var(--dim); margin-left: 8px; }
+  .trade-entry .te-pnl { font-size: 12px; font-weight: 700; }
+  .trade-entry .te-pnl.win { color: var(--green); }
+  .trade-entry .te-pnl.loss { color: var(--red); }
+
+  .empty-state {
+    color: var(--dimmer);
+    font-size: 11px;
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div id="login">
+  <div class="login-box">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">VORTEX AR v2.2</span>
+    </div>
+    <h2>Dashboard Connect</h2>
+
+    <div id="login-error" class="login-error" style="display:none"></div>
+
+    <label class="field-label">SERVER URL</label>
+    <input id="input-url" class="field-input" value="" placeholder="http://your-server:8443">
+
+    <label class="field-label">API KEY</label>
+    <input id="input-key" class="field-input" type="password" placeholder="Paste your API key...">
+
+    <div class="remember-row">
+      <input type="checkbox" id="remember" checked>
+      <label for="remember">Remember on this device</label>
+    </div>
+
+    <button id="btn-connect" class="btn-connect" onclick="connect()">CONNECT</button>
+  </div>
+</div>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div id="dashboard">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div id="hdr-dot" class="status-dot offline"></div>
+      <span class="logo-text" style="font-size:12px">VORTEX</span>
+      <span style="color:#333; font-size:10px">|</span>
+      <span id="hdr-status" class="conn-label off">OFFLINE</span>
+    </div>
+    <div class="header-right">
+      <span id="hdr-updated" class="last-updated"></span>
+      <button class="btn-sm" onclick="fetchStatus()">REFRESH</button>
+      <button class="btn-sm" onclick="disconnect()">✕</button>
+    </div>
+  </div>
+
+  <div id="error-banner" class="error-banner" style="display:none"></div>
+
+  <!-- Status Cards -->
+  <div class="cards-grid">
+    <div class="status-card" id="card-server" style="--card-accent: var(--green)">
+      <div class="sc-label">SIGNAL SERVER</div>
+      <div class="sc-value" id="sc-server-val" style="color:var(--green)">—</div>
+      <div class="sc-sub" id="sc-server-sub">—</div>
+    </div>
+    <div class="status-card" id="card-client" style="--card-accent: var(--green)">
+      <div class="sc-label">CLIENT (MT5)</div>
+      <div class="sc-value" id="sc-client-val" style="color:var(--green)">—</div>
+      <div class="sc-sub" id="sc-client-sub">—</div>
+    </div>
+    <div class="status-card" id="card-equity" style="--card-accent: var(--green)">
+      <div class="sc-label">EQUITY</div>
+      <div class="sc-value" id="sc-equity-val" style="color:var(--green)">—</div>
+      <div class="sc-sub" id="sc-equity-sub">—</div>
+    </div>
+    <div class="status-card" style="--card-accent: var(--yellow)">
+      <div class="sc-label">NEWS FILTER</div>
+      <div class="sc-value" id="sc-news-val" style="color:var(--yellow)">—</div>
+      <div class="sc-sub" id="sc-news-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-box">
+    <div class="progress-header">
+      <span class="label">PHASE 1 → $110,000 TARGET</span>
+      <span class="pct" id="prog-pct" style="color:var(--green)">0.00% / 10%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-labels">
+      <span>$100,000</span>
+      <span>$110,000</span>
+    </div>
+  </div>
+
+  <!-- Panels Row 1: System + News -->
+  <div class="panels-grid">
+    <div class="panel">
+      <div class="panel-title" style="color:var(--red)">SYSTEM STATUS</div>
+      <div id="system-info"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title" style="color:var(--yellow)">UPCOMING NEWS (48h)</div>
+      <div class="news-list" id="news-list"></div>
+    </div>
+  </div>
+
+  <!-- Panels Row 2: Signal Log + Trade Log -->
+  <div class="panels-grid">
+    <div class="panel">
+      <div class="panel-title" style="color:var(--blue)">SIGNAL LOG</div>
+      <div class="log-list" id="signal-log"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title" style="color:var(--green)">TRADE LOG</div>
+      <div class="log-list" id="trade-log"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let serverUrl = "";
+let apiKey = "";
+let pollTimer = null;
+let isConnected = false;
+
+// ── Persistence ──────────────────────────────────────────
+function saveCredentials() {
+  if (document.getElementById("remember").checked) {
+    try {
+      localStorage.setItem("vortex_url", serverUrl);
+      localStorage.setItem("vortex_key", apiKey);
+    } catch(e) {}
+  }
+}
+
+function loadCredentials() {
+  try {
+    const u = localStorage.getItem("vortex_url");
+    const k = localStorage.getItem("vortex_key");
+    if (u) document.getElementById("input-url").value = u;
+    if (k) document.getElementById("input-key").value = k;
+  } catch(e) {}
+}
+
+function clearCredentials() {
+  try {
+    localStorage.removeItem("vortex_url");
+    localStorage.removeItem("vortex_key");
+  } catch(e) {}
+}
+
+// ── Connect / Disconnect ─────────────────────────────────
+async function connect() {
+  const btn = document.getElementById("btn-connect");
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+
+  serverUrl = document.getElementById("input-url").value.replace(/\/+$/, "");
+  apiKey = document.getElementById("input-key").value.trim();
+
+  if (!apiKey) return;
+
+  btn.textContent = "CONNECTING...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${serverUrl}/status?key=${encodeURIComponent(apiKey)}`, {
+      headers: { "X-Client-ID": "dashboard" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} — check API key`);
+    const data = await res.json();
+
+    saveCredentials();
+    document.getElementById("login").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    isConnected = true;
+
+    renderData(data);
+    pollTimer = setInterval(fetchStatus, 30000);
+  } catch(e) {
+    errEl.textContent = "⚠ " + e.message;
+    errEl.style.display = "block";
+  } finally {
+    btn.textContent = "CONNECT";
+    btn.disabled = false;
+  }
+}
+
+function disconnect() {
+  if (pollTimer) clearInterval(pollTimer);
+  isConnected = false;
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("login").style.display = "flex";
+}
+
+// ── Fetch ────────────────────────────────────────────────
+async function fetchStatus() {
+  const errEl = document.getElementById("error-banner");
+  try {
+    const res = await fetch(`${serverUrl}/status?key=${encodeURIComponent(apiKey)}`, {
+      headers: { "X-Client-ID": "dashboard" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    isConnected = true;
+    errEl.style.display = "none";
+    renderData(data);
+  } catch(e) {
+    isConnected = false;
+    errEl.textContent = "⚠ Connection error: " + e.message;
+    errEl.style.display = "block";
+    updateHeaderStatus(false);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function renderData(d) {
+  updateHeaderStatus(true);
+
+  // Cards
+  const running = d.running;
+  setCard("sc-server-val", running ? "ONLINE" : "OFFLINE", running ? "var(--green)" : "var(--red)");
+  setCard("sc-server-sub", "Uptime: " + fmtUptime(d.uptime_sec));
+  document.getElementById("card-server").style.setProperty("--card-accent", running ? "var(--green)" : "var(--red)");
+
+  const clientOnline = d.clients && Object.values(d.clients).some(c => c.online);
+  setCard("sc-client-val", clientOnline ? "CONNECTED" : "DISCONNECTED", clientOnline ? "var(--green)" : "var(--red)");
+  setCard("sc-client-sub", clientOnline ? "Polling every 15m" : "Check Windows VPS");
+  document.getElementById("card-client").style.setProperty("--card-accent", clientOnline ? "var(--green)" : "var(--red)");
+
+  const equity = d.last_equity || 0;
+  const pnl = equity ? equity - 100000 : 0;
+  const pnlPct = equity ? ((equity - 100000) / 100000 * 100) : 0;
+  const pnlColor = pnl >= 0 ? "var(--green)" : "var(--red)";
+  setCard("sc-equity-val", fmtMoney(equity), pnlColor);
+  setCard("sc-equity-sub", `P/L: ${pnl >= 0 ? "+" : ""}${fmtMoney(pnl)} (${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%)`);
+  document.getElementById("card-equity").style.setProperty("--card-accent", pnl >= 0 ? "var(--green)" : "var(--red)");
+
+  const newsCount = d.news_filter?.total_events || 0;
+  setCard("sc-news-val", `${newsCount} events`, "var(--yellow)");
+  setCard("sc-news-sub", `Source: ${d.news_filter?.source || "—"}`);
+
+  // Progress
+  const progPct = Math.max(0, Math.min(100, (pnlPct / 10) * 100));
+  document.getElementById("prog-pct").textContent = `${pnlPct.toFixed(2)}% / 10%`;
+  document.getElementById("prog-pct").style.color = pnlColor;
+  document.getElementById("prog-fill").style.width = progPct + "%";
+
+  // System info
+  const trades = d.trade_log || [];
+  const wins = trades.filter(t => t.result === "WIN").length;
+  const losses = trades.filter(t => t.result === "LOSS").length;
+  const total = wins + losses;
+  const wr = total > 0 ? (wins / total * 100).toFixed(1) + "%" : "—";
+
+  const cooldown = d.cooldown || {};
+  const dailyLoss = d.daily_loss || {};
+
+  document.getElementById("system-info").innerHTML = [
+    infoRow("Signals Today", d.signals_today || 0),
+    infoRow("Total Signals", d.signals_generated || 0),
+    infoRow("Last Signal", d.last_signal ? new Date(d.last_signal).toLocaleString() : "None"),
+    infoRow("Last Bar", d.last_bar_time || "—"),
+    infoRow("Win Rate", wr),
+    infoRow("Trades (W/L)", total > 0 ? `${total} (${wins}W / ${losses}L)` : "0"),
+    infoRow("BUY Cooldown", cooldown.buy_cooled ? `🔴 ${cooldown.buy_bars_left} bars` : "✅ Ready"),
+    infoRow("SELL Cooldown", cooldown.sell_cooled ? `🔴 ${cooldown.sell_bars_left} bars` : "✅ Ready"),
+    infoRow("Daily Loss", dailyLoss.locked ? "🔴 LOCKED" : `✅ ${dailyLoss.pnl_today || "$0"}`),
+  ].join("");
+
+  // News
+  const newsEl = document.getElementById("news-list");
+  const upcoming = d.news_filter?.upcoming || [];
+  if (upcoming.length > 0) {
+    newsEl.innerHTML = upcoming.map(ev => `
+      <div class="news-item">
+        <div>
+          <div class="ni-name">${esc(ev.event)}</div>
+          <div class="ni-time">${esc(ev.time)} UTC</div>
+        </div>
+        <span class="currency-badge ${esc(ev.currency)}">${esc(ev.currency)}</span>
+      </div>
+    `).join("");
+  } else {
+    newsEl.innerHTML = '<div class="empty-state">No upcoming high-impact events</div>';
+  }
+
+  // Signal log
+  const sigEl = document.getElementById("signal-log");
+  const sigs = d.signal_log || [];
+  if (sigs.length > 0) {
+    sigEl.innerHTML = [...sigs].reverse().map(s => {
+      const typeColor = s.type === "SIGNAL" ? "var(--green)" : s.type === "NEWS_BLOCK" ? "var(--yellow)" : "var(--dim)";
+      return `<div class="log-entry">
+        <span class="le-time">${esc(s.time)}</span>
+        <span class="le-type" style="color:${typeColor}">[${esc(s.type)}]</span>
+        <span class="le-msg">${esc(s.message)}</span>
+      </div>`;
+    }).join("");
+  } else {
+    sigEl.innerHTML = '<div class="empty-state">No signals yet</div>';
+  }
+
+  // Trade log
+  const tradeEl = document.getElementById("trade-log");
+  if (trades.length > 0) {
+    tradeEl.innerHTML = [...trades].reverse().map(t => {
+      const isWin = t.result === "WIN";
+      return `<div class="trade-entry">
+        <div>
+          <span class="te-dir ${esc(t.direction)}">${esc(t.direction)}</span>
+          <span class="te-time">${esc(t.time)}</span>
+        </div>
+        <span class="te-pnl ${isWin ? 'win' : 'loss'}">${isWin ? '+' : ''}${fmtMoney(t.pnl)}</span>
+      </div>`;
+    }).join("");
+  } else {
+    tradeEl.innerHTML = '<div class="empty-state">No trades yet</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function updateHeaderStatus(online) {
+  const dot = document.getElementById("hdr-dot");
+  const label = document.getElementById("hdr-status");
+  const upd = document.getElementById("hdr-updated");
+
+  dot.className = "status-dot " + (online ? "online" : "offline");
+  label.textContent = online ? "CONNECTED" : "OFFLINE";
+  label.className = "conn-label " + (online ? "on" : "off");
+  upd.textContent = "Updated: " + new Date().toLocaleTimeString();
+}
+
+function setCard(id, text, color) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.textContent = text;
+    if (color) el.style.color = color;
+  }
+}
+
+function infoRow(label, value) {
+  return `<div class="info-row"><span class="ir-label">${esc(String(label))}</span><span class="ir-value">${esc(String(value))}</span></div>`;
+}
+
+function fmtUptime(s) {
+  if (!s) return "—";
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return d + "d " + h + "h " + m + "m";
+  if (h > 0) return h + "h " + m + "m";
+  return m + "m";
+}
+
+function fmtMoney(v) {
+  if (!v && v !== 0) return "$0.00";
+  return "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Init ─────────────────────────────────────────────────
+loadCredentials();
+</script>
+</body>
+</html>
